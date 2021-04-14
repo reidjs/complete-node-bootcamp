@@ -1,55 +1,168 @@
-# Course Material and FAQ for my Complete Node.js, Express and MongoDB Bootcamp
+https://www.udemy.com/course/nodejs-express-mongodb-bootcamp 
+# Mongo Overview
+Flexible, Scalable Document Database.
+Collections (like tables)
+  - reviews
+  - users
+  - etc
+Documents Each collection, contains one or more data structures (like rows)
+  - one user
+  - one blog post
+  - Looks like JSON
+  - Field-Value pairs 
 
-This repo contains starter files and the finished project files for all the projects contained in the course (complete repo size is **288MB**).
+## BSON
+Data format for mongodb. Looks same as JSON, but typed. String, double, int, etc.
+{
+  "_id": ObjectID('123324234'),
+  "title": "foobar",
+  "tags": ["bar", "foo"],
+  comments: [
+    {"foo": "bar"}
+  ]
+}
 
-Use starter code to start each section, and **final code to compare it with your own code whenever something doesn't work**!
+Key value pairs are called "fields"
 
-Plus, I made all the [course slides available for download](theory-lectures.pdf), to make it easier to follow along the theory videos.
+## Embedded documents
+denormalized data (see 'comments' field above)
 
-👇 **_Please read the following Frequently Asked Questions (FAQ) carefully before starting the course_** 👇
+Max size for each document is 16MB
+Each document contains unique ID which acts as primary key (auto generated)
 
-## FAQ
+## Installation
+Make sure mongo exists in:
+/usr/local/bin
+Then make a folder:
+/data/db
+then give permissions:
+sudo chown -R `id -un` /data/db
 
-### Q1: How do I download the files?
+## Atlas
+mongodb running in cloud
 
-**A:** If you're new to GitHub and just want to download the entire code, hit the green button saying "Code", and then choose the "Download ZIP" option.
+## Shell
+`cmd+K` clear terminal
 
-### Q2: I'm stuck in one of the projects. Where do I get help?
+`use natours-test`
+- create database and switch to it
 
-**A:** Have you actually tried to fix the problem on your own? Have you compared your code to the final code? If you failed fixing your problem, please **post a detailed description of the problem to the Q&A area of that video over at Udemy**, along with a [codepen](https://codepen.io/pen/) containing your code. You will get help there. Please don't send me a personal message or email to fix coding problems.
+`db.tours.insertOne({ name: "The Forest Hiker", price: 297, rating: 4.7 })`
+- insert an object into tours collection
 
-### Q3: What VSCode theme are you using?
+`db.tours.insertMany([{ name: "The Sea Explorer", price: 497, rating: 4.8 }, { name: "The Snow Adventure" , price: 997, rating: 4.9, difficulty: "easy" }])`
+- insert many objects
 
-**A:** I use Oceanic Next (dimmed bg) for all my coding and course production. [Here is my complete VSCode setup](vscode-setup.md).
+`db.tours.find()`
+{ "_id" : ObjectId("6077122006e124d1cd73a308"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
 
-### Q4: Can I see a final version of the course projects?
+`show dbs`
+- show databases
+- use `use` to switch
 
-**A:** Absolutely! The main project is [Natours](https://www.natours.dev/) (it even got its own domain 😎). You can log in with `laura@example.com` and password `test1234`. There is also an API at `/api`, with [documentation available here](https://documenter.getpostman.com/view/4237486/S1LwxnaE?version=latest) (incomplete). The small Node.js introduction project is [Node Farm](https://node-farm.herokuapp.com/).
+## Querying
+`db.collectionname.find()`
+- return all documents in collection
 
-### Q5: Videos don't load, can you fix it?
+`db.tours.find({ name: "The Forest Hiker" })`
+- return document with that name
 
-**A:** Unfortunately, there is nothing I can do about it. The course is hosted on Udemy, and sometimes they have technical issues like this. Please just come back a bit later or [contact their support team](https://support.udemy.com/hc/en-us).
+`db.tours.find({ price: { $lte: 500 } })`
+- return documents with price less than or equal to 500
 
-### Q6: Videos are blurred / have low quality, can you fix it?
+`db.tours.find({ price: { $lte: 500 }, rating: { $gte: 4.8 } })`
+- return docs with price lte 500, rating gte 4.8
 
-**A:** Please open video settings and change the quality from 'Auto' to another value, for example 720p. If that doesn't help, please [contact the Udemy support team](https://support.udemy.com/hc/en-us).
+`db.tours.find({ $or: [ {price: {$lt: 500}}, {rating: {$gte: 4.8}}]})`
+- docs with price lt 500 OR rating gte 4.8
 
-### Q7: Are the videos downloadable?
+`db.tours.find({ price: {$gt: 500}, rating: {$gte: 4.8} })`
+- docs with price gt 500 AND rating gte 4.8
 
-**A:** Yes! I made all videos downloadable from Udemy so you can learn even without an internet connection. To download a video, use the settings icon in the right bottom corner of the video player. Videos have to be downloaded individually.
+`db.tours.find({ $or: [ {price: {$lt: 500}}, {rating: {$gte: 4.8}}]}, { name: 1 })`
+- only return the 'name' (and objectID) in the output
 
-### Q8: I want to put the project in my portfolio. Is that allowed?
+## Updating Documents
+`db.tours.updateOne({ name: "The Snow Adventure" }, { $set: { price: 597, rating: 4.85 } })`
+- first object: query which objects you want to update
+- second object: fields to update
+- you can also add new fields in the second object
 
-**A:** Absolutely! Just make sure you actually built it yourself by following the course, and that you understand what you did. What is **not allowed** is that you create your own course/videos/articles based on this course's content!
+`db.tours.replaceOne(...)`
+- replace doc
 
-### Q9: I love your courses and want to get updates on new courses. How?
+## Deleting Documents
+`db.tours.deleteOne({...})`
+- deletes first doc matching query
 
-**A:** First, you can subscribe to my email list [at my website](http://codingheroes.io/resources). Plus, I make important announcements on twitter [@jonasschmedtman](https://twitter.com/jonasschmedtman), so you should definitely follow me there 🔥
+`db.tours.deleteMany({...})`
+- deletes all docs matching query
 
-### Q10: How do I get my certificate of completion?
+`db.tours.deleteMany({})`
+- deletes ALL documents in tours collection
 
-**A:** A certificate of completion is provided by Udemy after you complete 100% of the course. After completing the course, just click on the "Your progress" indicator in the top right-hand corner of the course page. If you want to change your name on the certificate, please [contact the Udemy support team](https://support.udemy.com/hc/en-us).
 
-### Q11: Do you accept pull requests?
+## connecting
+mongodb://localhost:27017
 
-**A:** No, for the simple reason that I want this repository to contain the _exact_ same code that is shown in the videos. However, please feel free to add an issue if you found one.
+# mongoose
+mongoose gives us schemas to model data and relationships, easy data validation, query api, middleware
+
+# Declaring schema: 
+
+```js
+const tourSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  rating: Number,
+  price: Number
+})
+```
+
+Example with defaults and error messages
+```js
+const tourSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, "A tour must have a name"]
+  },
+  rating: {
+    type: Number,
+    default: 4.5
+  },
+  price: {
+    type: Number,
+    required: [true, "A tour must have a price"]
+  }
+})
+```
+Defining models: 
+```js
+const Tour = mongoose.Model('Tour', tourSchema)
+```
+
+## MVC Architecture
+controllers are application logic
+models are business logic
+views are presentation logic
+  - not part of the backend api so much
+
+request -> routers (/tours, /users, etc) -> handler fn (controller) -> models (eg retrieve from DB, or create new one) -> response 
+
+application logic vs business logic
+### application logic
+only concerned with app implementation
+ - managing requests and responses
+ - technical stuff
+ - bridge between model and view layer
+
+### business logic
+only concerned with business needs/rules
+ - checking tours in db
+ - creating new tours
+ - tour schema
+ - validating only users who bought a tour can see it
+
+Fat models, thin controllers. Offload as much logic into the models as possible. Controller should mostly just be concerned with request/response. 
