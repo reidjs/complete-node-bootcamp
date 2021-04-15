@@ -166,3 +166,18 @@ only concerned with business needs/rules
  - validating only users who bought a tour can see it
 
 Fat models, thin controllers. Offload as much logic into the models as possible. Controller should mostly just be concerned with request/response. 
+
+
+## Schema
+If you try to add fields that are not present in the mongoose schema, they will get ignored
+
+## Dates on Models
+```js
+  createdAt: {
+    type: Date,
+    default: Date.now()
+  },
+```
+## Arrays of values on Models
+  `startDates: [Date]`
+  `names: [String]`
