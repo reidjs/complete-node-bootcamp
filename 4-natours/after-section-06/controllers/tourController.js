@@ -28,8 +28,6 @@ const Tour = require('../models/tourModel')
 // };
 
 exports.getAllTours = async (req, res) => {
-  // console.log(req.requestTime);
-
   try {
     // const tours = await Tour.find().where('duration').lte(5).where('difficulty').equals('easy')
     // shallow copy
@@ -39,14 +37,44 @@ exports.getAllTours = async (req, res) => {
       delete queryObj[field]
     })
     
-    console.log('req.query', req.query)
-    // TODO: Sort, limit, etc
     // { difficulty: 'easy', rating: { $gte: 5 }}
     let queryStr = JSON.stringify(queryObj)
     // gte, lte, lt, gt
-    // this is a bad idea, what if the name of a place was lt or gte? 
+    // TODO: what if the name of a place was lt or gte? 
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`)
-    const query = Tour.find(JSON.parse(queryStr))
+    let query = Tour.find(JSON.parse(queryStr))
+
+    // Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ')
+      query = query.sort(sortBy)
+    } else {
+      const createdAtDescending = '-createdAt'
+      query = query.sort(createdAtDescending)
+    }
+
+    // Field limiting
+    if (req.query.fields) {
+      const fieldsToShow = req.query.fields.split(',').join(' ')
+      query = query.select(fieldsToShow)
+    } else {
+      query = query.select('-__v')
+    }
+
+    // Pagination
+    if (req.query.page || req.query.limit) {
+      const page = +req.query.page || 1
+      const limit = +req.query.limit || 10
+      const skip = (page - 1) * limit
+      const numberOfTours = await Tour.countDocuments()
+      if (skip >= numberOfTours) {
+        throw new Error('This page does not exist')
+      }
+      query = query.skip(skip).limit(limit)
+    } else {
+      query = query.limit(10)
+    }
+
 
     const tours = await query
 
@@ -66,8 +94,6 @@ exports.getAllTours = async (req, res) => {
 };
 
 exports.getTour = async (req, res) => {
-  // console.log(req.params);
-  // const id = req.params.id * 1;
   try {
     const tour = await Tour.findById(req.params.id)
     console.log('tour', tour)
@@ -87,7 +113,6 @@ exports.getTour = async (req, res) => {
 };
 
 exports.createTour = async (req, res) => {
-  // console.log(req.body);
   try {
 
     const tour = req.body

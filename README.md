@@ -1,6 +1,7 @@
 https://www.udemy.com/course/nodejs-express-mongodb-bootcamp 
 # Mongo Overview
 Flexible, Scalable Document Database.
+
 Collections (like tables)
   - reviews
   - users
@@ -28,16 +29,18 @@ Key value pairs are called "fields"
 denormalized data (see 'comments' field above)
 
 Max size for each document is 16MB
+
 Each document contains unique ID which acts as primary key (auto generated)
 
 ## Installation
+```
 Make sure mongo exists in:
 /usr/local/bin
 Then make a folder:
 /data/db
 then give permissions:
 sudo chown -R `id -un` /data/db
-
+```
 ## Atlas
 mongodb running in cloud
 
@@ -130,7 +133,8 @@ const tourSchema = new mongoose.Schema({
   },
   rating: {
     type: Number,
-    default: 4.5
+    default: 4.5,
+    select: false
   },
   price: {
     type: Number,
@@ -138,6 +142,7 @@ const tourSchema = new mongoose.Schema({
   }
 })
 ```
+  - `select: false` sets mongoose to not return this field by default
 Defining models: 
 ```js
 const Tour = mongoose.Model('Tour', tourSchema)
@@ -145,13 +150,15 @@ const Tour = mongoose.Model('Tour', tourSchema)
 
 ## MVC Architecture
 controllers are application logic
+
 models are business logic
+
 views are presentation logic
-  - not part of the backend api so much
+  - views are not generally part of the backend api
 
 request -> routers (/tours, /users, etc) -> handler fn (controller) -> models (eg retrieve from DB, or create new one) -> response 
 
-application logic vs business logic
+### application logic vs business logic
 ### application logic
 only concerned with app implementation
  - managing requests and responses
@@ -165,7 +172,11 @@ only concerned with business needs/rules
  - tour schema
  - validating only users who bought a tour can see it
 
-Fat models, thin controllers. Offload as much logic into the models as possible. Controller should mostly just be concerned with request/response. 
+Fat models, thin controllers. 
+
+Offload as much logic into the models as possible. 
+
+Controller should mostly just be concerned with request/response. 
 
 
 ## Schema
@@ -179,5 +190,37 @@ If you try to add fields that are not present in the mongoose schema, they will 
   },
 ```
 ## Arrays of values on Models
-  `startDates: [Date]`
-  `names: [String]`
+```js
+  startDates: [Date]
+  names: [String]
+```
+## Sorting
+```js
+query.sort('foo bar -baz')
+```
+  - sorts first by foo asc, then bar asc, then baz descending
+
+## Field Limiting
+- also known as "Projecting"
+
+```js
+query.select('name duration price')
+```
+- only returns field names *name* *duration* *price*
+
+```js
+query.select('-name -price')
+```
+- returns everything EXCEPT *name* and *price*
+
+## Pagination
+```js
+query.skip(20).limit(10)
+```
+- Skip 20 records and show 10 (21-30 inclusive)
+- Formula: skip = (page - 1) * limit
+
+### countDocuments
+```js
+await model.countDocuments()
+```
