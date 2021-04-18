@@ -224,3 +224,24 @@ query.skip(20).limit(10)
 ```js
 await model.countDocuments()
 ```
+
+## Express Middleware
+Can be used to shape the request before it hits the controller,
+
+in routes:
+```js
+router.route('/top-5-cheap')
+  .get(tourController.changeQueryStringMiddleWare, tourController.getAllTours);
+```
+
+in controller:
+```js
+exports.changeQueryStringMiddleWare = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next()
+}
+```
+
+remember to add the 'next' argument
