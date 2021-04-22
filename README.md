@@ -245,3 +245,51 @@ exports.changeQueryStringMiddleWare = (req, res, next) => {
 ```
 
 remember to add the 'next' argument
+
+## Aggregation Pipeline
+https://docs.mongodb.com/manual/aggregation/ 
+
+https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/
+1. match
+- select or filter objects
+2. group
+- group objects by properties like difficulty, price, etc. Good for getting stats 
+```js
+{
+  $group: {
+    _id: null,
+    numTours: { $sum: 1 },
+    numRatings: { $sum: '$ratingsQuantity'},
+    avgRating: { $avg: '$ratingsAverage' },
+    avgPrice: { $avg: '$price' },
+    minPrice: { $min: '$price'},
+    maxPrice: { $max: '$price'},
+  }
+}
+```
+you can chain commands onto _id as well, such as 
+id: { $toUpper: '$difficulty' }
+
+you can chain multiple aggregations one after another, even repeating ones you've already used
+```js
+{
+  $match: { ratingsAverage: { $gte: 4.5 }}
+},
+{
+  $group: {
+    _id: '$difficulty',
+    numTours: { $sum: 1 },
+    numRatings: { $sum: '$ratingsQuantity'},
+    avgRating: { $avg: '$ratingsAverage' },
+    avgPrice: { $avg: '$price' },
+    minPrice: { $min: '$price'},
+    maxPrice: { $max: '$price'},
+  }
+},
+{
+  $sort: { avgPrice: 1 }
+},
+{
+  $match: { _id: { $ne: 'EASY'}}
+}
+```
