@@ -42,66 +42,27 @@ class APIFeatures {
   }
 
   limitFields() {
-    if (req.queryString.fields) {
-      const fieldsToShow = req.query.fields.split(',').join(' ')
+    if (this.queryString.fields) {
+      const fieldsToShow = this.query.fields.split(',').join(' ')
       this.query = this.query.select(fieldsToShow)
     } else {
       this.query = this.query.select('-__v')
     }
     return this
   }
+
+  paginate() {
+    const page = +this.query.page || 1
+    const limit = +this.query.limit || 10
+    const skip = (page - 1) * limit
+    this.query = this.query.skip(skip).limit(limit)
+    return this
+  }  
 }
 
 exports.getAllTours = async (req, res) => {
   try {
-    // const tours = await Tour.find().where('duration').lte(5).where('difficulty').equals('easy')
-    // shallow copy
-    // const queryObj = { ...req.query }
-    // const excludedFields = ['page', 'sort', 'limit', 'fields']
-    // excludedFields.forEach(field => {
-    //   delete queryObj[field]
-    // })
-    
-    // // { difficulty: 'easy', rating: { $gte: 5 }}
-    // let queryStr = JSON.stringify(queryObj)
-    // // gte, lte, lt, gt
-    // // TODO: what if the name of a place was lt or gte? 
-    // queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`)
-    // let query = Tour.find(JSON.parse(queryStr))
-
-    // Sorting
-    // if (req.query.sort) {
-    //   const sortBy = req.query.sort.split(',').join(' ')
-    //   query = query.sort(sortBy)
-    // } else {
-    //   const createdAtDescending = '-createdAt'
-    //   query = query.sort(createdAtDescending)
-    // }
-
-    // Field limiting
-    // if (req.query.fields) {
-    //   const fieldsToShow = req.query.fields.split(',').join(' ')
-    //   query = query.select(fieldsToShow)
-    // } else {
-    //   query = query.select('-__v')
-    // }
-
-    // Pagination
-    if (req.query.page || req.query.limit) {
-      const page = +req.query.page || 1
-      const limit = +req.query.limit || 10
-      const skip = (page - 1) * limit
-      const numberOfTours = await Tour.countDocuments()
-      if (skip >= numberOfTours) {
-        throw new Error('This page does not exist')
-      }
-      query = query.skip(skip).limit(limit)
-    } else {
-      query = query.limit(10)
-    }
-
-    const features = new APIFeatures(Tour.find(), req.query).filter().sort()
-
+    const features = new APIFeatures(Tour.find(), req.query).filter().sort().limitFields().paginate()
     const tours = await features.query
 
     res.status(200).json({
