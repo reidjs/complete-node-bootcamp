@@ -293,3 +293,10 @@ you can chain multiple aggregations one after another, even repeating ones you'v
   $match: { _id: { $ne: 'EASY'}}
 }
 ```
+## if mongodb is causing issues:
+Make sure it's running!
+
+brew services list
+
+brew services restart mongodb-community
+

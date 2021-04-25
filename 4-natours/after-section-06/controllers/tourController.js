@@ -91,38 +91,56 @@ exports.deleteTour = async (req, res) => {
     res.status(204).json({
       status: 'success',
     });
-  } catch(err) {
+  } catch (err) {
     res.status(400).json({
       status: 'fail',
       message: err
     })
   }
 };
+// find busiest month using agg pipelines 
+exports.getMonthlyPlan = async (req, res) => {
+  try {
+    const year = +req.params.year
+    const plan = await Tour.aggregate([])
+    res.status(200).json({
+      status: 'success',
+      data: {
+        plan
+      }
+    })
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err
+    })
+  }
+}
 
 exports.getTourStats = async (req, res) => {
   try {
     const stats = await Tour.aggregate([
       {
-        $match: { ratingsAverage: { $gte: 4.5 }}
+        $match: { ratingsAverage: { $gte: 4.5 } }
       },
       {
         $group: {
           _id: '$difficulty',
           numTours: { $sum: 1 },
-          numRatings: { $sum: '$ratingsQuantity'},
+          numRatings: { $sum: '$ratingsQuantity' },
           avgRating: { $avg: '$ratingsAverage' },
           avgPrice: { $avg: '$price' },
-          minPrice: { $min: '$price'},
-          maxPrice: { $max: '$price'},
+          minPrice: { $min: '$price' },
+          maxPrice: { $max: '$price' },
         }
       },
       {
         $sort: { avgPrice: 1 }
       },
       {
-        $match: { _id: { $ne: 'EASY'}}
+        $match: { _id: { $ne: 'EASY' } }
       }
-    ]) 
+    ])
     res.status(200).json({
       status: 'success',
       data: {
