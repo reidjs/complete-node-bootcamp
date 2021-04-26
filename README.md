@@ -300,3 +300,42 @@ brew services list
 
 brew services restart mongodb-community
 
+## JSON Web Tokens (JWT) 
+stateless solution for rest auth
+generate on server
+user stores in cookie
+when trying to access protected routes, send JWT in headers
+
+3 parts of a JWT
+
+header
+  algorithm and type
+payload
+  e.g. id, name, email 
+signature
+  signing algo takes header + payload and secret to create signature --> JWT
+
+send JWT to client
+
+Once server receives JWT, it verifies no one changed header or payload data of token 
+it generates a 'test signature' which should equal the original signature
+
+server ensures test signature == signature
+
+## Cookies
+Cookies are small bit of text sent from server to client
+Browsers automatically store it 
+Then they send it back to the server automatically in each request
+
+To send a cookie, attach it to the response object
+expires must be in milliseconds (this is for 90 days from now)
+```js
+res.cookie('jwt', token, {
+  expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+  // https only
+  secure: true,
+  // prevent browser from accessing cookie
+  httpOnly: true
+})
+
+```
